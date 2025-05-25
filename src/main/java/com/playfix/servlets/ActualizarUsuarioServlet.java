@@ -1,0 +1,53 @@
+package com.playfix.servlets;
+
+import com.playfix.utils.ConexionDB;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+@WebServlet("/actualizar_usuario")
+public class ActualizarUsuarioServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+
+        // Obtener parámetros del formulario
+        String idParam = req.getParameter("id");
+        String nombre = req.getParameter("nombre");
+        String mail = req.getParameter("mail");
+        String telefono = req.getParameter("telefono");
+
+        if (idParam == null || idParam.isEmpty()) {
+            resp.sendRedirect("HelloServlet");
+            return;
+        }
+
+        int id = Integer.parseInt(idParam);
+
+        String sql = "UPDATE tabla_usuarios SET nombre_usuario = ?, mail_usuario = ?, telefono_usuario = ? WHERE id_usuario = ?";
+
+        try (Connection conn = ConexionDB.obtenerConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nombre);
+            stmt.setString(2, mail);
+            stmt.setString(3, telefono);
+            stmt.setInt(4, id);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new ServletException("Error actualizando usuario", e);
+        }
+
+        // Redirigir a la lista de usuarios después de actualizar
+        resp.sendRedirect("HelloServlet");
+    }
+}
